@@ -1,0 +1,224 @@
+---
+title: "Mapping"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+editor_options:
+  chunk_output_type: console
+---
+# Map using`ozmaps`
+
+[Reference](https://github.com/mdsumner/ozmaps)
+
+**Load libraries**
+```{r}
+library(ozmaps)
+library(sf)
+library(sp)
+library(dplyr)
+library(rgdal)
+library(raster)
+library(ggplot2)
+library(readr)
+library(paletteer)
+library(rmapshaper)
+library(ggrepel)
+library(tidyverse)
+# ozmaps data not on CRAN
+#devtools::install_github("mdsumner/ozmaps.data")
+#library(ozmaps.data)
+library(readxl)
+library(ggpubr)
+```
+
+Configure base mapping of Australia
+
+```{r}
+oz_states <- ozmaps::ozmap_states
+ggplot(oz_states) + 
+  geom_sf() + 
+  coord_sf()
+
+oz_states <- ozmaps::ozmap_states %>% filter(NAME != "Other Territories")
+oz_votes <- rmapshaper::ms_simplify(ozmaps::abs_ced)
+ggplot() + 
+  geom_sf(data = oz_states, mapping = aes(fill = NAME), show.legend = FALSE) +
+  geom_sf(data = oz_votes, fill = NA) + 
+  coord_sf()
+```
+
+## Mapping *Amblyomma triguttatum* records
+
+Load data
+```{r}
+obs.data.atrig <- read_csv("data/tick_records/atrig/compiled_record_list.csv")
+obs.data.atrig$Subspecies <- obs.data.atrig$Tick_subspecies
+```
+
+**Make single map with point showing 
+
+Create a map showing different subspecies of *Am. triguttatum*
+
+Make map with state and voting outlines, overlay with all observation data
+```{r}
+Atrig1 = ggplot() + 
+  geom_sf(data = oz_votes) + 
+  geom_sf(data = oz_states, colour = "black", fill = "NA") + 
+  geom_point(data = obs.data.atrig, mapping = aes(x = Lon, y = Lat, shape=Subspecies, color =Subspecies, stroke = 1)) + 
+  coord_sf() + theme_bw() + 
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank())  +
+  scale_color_manual(values=c("#252525", "#1b9e77", "#e7298a", "#66a61e", "#7570b3")) +
+  scale_shape_manual(values=c(16, 17, 15, 3, 7)) + 
+  xlim (111,155)
+Atrig1
+
+# Map without legend
+Atrig2 <- Atrig1 + theme(legend.position = "none")
+```
+
+
+```{r eval=FALSE, include=TRUE}
+# Save
+ggsave("map-atrig-comb.pdf", plot = Atrig1, path = "output/plots", width = 30, height = 15, units = "cm")
+ggsave("map-atrig-comb-nolegend.pdf", plot = Atrig2, path = "output/plots", width = 30, height = 15, units = "cm")
+```
+
+**Facet by subspecies**
+
+```{r}
+# Filter out data where subspecies is not specified
+obs.data.ssp = filter(obs.data.atrig, Subspecies != "Not specified")
+
+# make master plot
+Atrig3 = ggplot() + 
+  geom_sf(data = oz_votes) + 
+  geom_sf(data = oz_states, colour = "black", fill = "NA") + 
+  geom_point(data = obs.data.ssp, mapping = aes(x = Lon, y = Lat, shape=Subspecies, color =Subspecies, stroke = 1)) + 
+  coord_sf() + theme_bw() + 
+  theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank()) + 
+  scale_color_manual(values=c("#1b9e77", "#e7298a", "#66a61e", "#7570b3")) +
+  scale_shape_manual(values=c(17, 15, 3, 7)) + xlim (111,155)
+# Facet
+Atrig3 = Atrig3 + facet_wrap(~ Subspecies)
+Atrig3
+```
+
+```{r eval=FALSE, include=TRUE}
+# Save
+ggsave("map-atrig-facet.pdf", plot = Atrig3, path = "output/plots", width = 30, height = 20, units = "cm")
+```
+
+### Simple map
+
+Make simple map for summary slides
+```{r}
+Atrig4 = ggplot() + 
+  geom_sf(data = oz_votes) + 
+  geom_sf(data = oz_states, colour = "black", fill = "NA") + 
+  geom_point(data = obs.data.atrig, mapping = aes(x = Lon, y = Lat, color="#7570b3", stroke = 1))
+# Customise scale
+Atrig4 = Atrig4 + coord_sf() + theme_bw() + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())  + scale_color_manual(values=c("#7570b3"))
+# Remove scale
+Atrig5 = Atrig4 + coord_sf() + theme_void() + theme(legend.position = "none")  + scale_color_manual(values=c("#7570b3"))
+```
+
+Save maps
+```{r eval=FALSE, include=TRUE}
+ggsave("map-atrig-simple1.pdf", plot = Atrig4, path = "output/plots", width = 30, height = 15, units = "cm")
+ggsave("map-atrig-simple2.pdf", plot = Atrig5, path = "output/plots", width = 30, height = 15, units = "cm")
+```
+
+
+## Map of *Ixodes holocyclus* records
+
+Load data
+```{r}
+# raw ala records
+ixhol.ala <- read_csv(file = "data/tick_records/ixhol/Ixhol-records-2021-02-23/records-2021-02-23.csv")
+# curated ala records - removed likely incorrect (or as a result of travel?) records from WA, SA and TAS. 
+ixhol.alacur <- read_csv(file = "data/tick_records/ixhol/Ixhol-records-2021-02-23/records-2021-02-23-curated.csv")
+```
+
+Make map with state and voting outlines, overlay with all observation data
+```{r}
+Ixhol = ggplot() + 
+  geom_sf(data = oz_votes) + 
+  geom_sf(data = oz_states, colour = "black", fill = "NA") + 
+  geom_point(data = ixhol.alacur, mapping = aes(x = Longitude, y = Latitude, color="#d95f02", stroke = 1))
+# Customise scale
+Ixhol1 = Ixhol + coord_sf() + theme_bw() + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())  + scale_color_manual(values=c("#d95f02"))
+Ixhol1
+# Remove scale
+Ixhol2 = Ixhol + coord_sf() + theme_void() + theme(legend.position = "none")  + scale_color_manual(values=c("#d95f02"))
+```
+Save maps
+```{r}
+ggsave("map-ixhol1.pdf", plot = Ixhol1, path = "output/plots", width = 30, height = 15, units = "cm")
+ggsave("map-ixhol2.pdf", plot = Ixhol2, path = "output/plots", width = 30, height = 15, units = "cm")
+```
+
+## Map of *Ixodes tasmani* records
+
+
+Load data
+```{r}
+# curated records
+obs.data.ixhol <- read_excel("data/tick_records/ixtas/curated.xlsx")
+```
+
+Make map with state and voting outlines, overlay with all observation data
+```{r}
+Ixtas = ggplot() + 
+  geom_sf(data = oz_votes) + 
+  geom_sf(data = oz_states, colour = "black", fill = "NA") + 
+  geom_point(data = obs.data.ixhol, mapping = aes(x = Lon, y = Lat, color="#a6761d", stroke = 1))
+# Customise scale
+Ixtas1 = Ixtas + coord_sf() + theme_bw() + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())  + scale_color_manual(values=c("#a6761d"))
+Ixtas1
+# Remove scale
+Ixtas2 = Ixtas1 + coord_sf() + theme_void() + theme(legend.position = "none")  + scale_color_manual(values=c("#a6761d"))
+```
+Save maps
+```{r}
+ggsave("map-ixtas1.pdf", plot = Ixtas1, path = "output/plots", width = 30, height = 15, units = "cm")
+ggsave("map-ixtas2.pdf", plot = Ixtas2, path = "output/plots", width = 30, height = 15, units = "cm")
+```
+
+# Combined map
+
+Make combine map of *Am. trig*, *Ix. hol* and *Ix. tas*.
+
+```{r}
+figure1 <- ggarrange(Atrig2, Ixhol1, Ixtas1,
+                    labels = c("A", "B", "C"),
+                    ncol = 2, nrow = 2)
+ggsave("combined-map1.pdf", plot = figure1, path = "output/plots", width = 30, height = 15, units = "cm")
+figure1
+
+figure2 <- ggarrange(Atrig2, Ixhol1, Ixtas1,
+                    labels = c("A", "B", "C"),
+                    nrow = 3)
+ggsave("combined-map2.pdf", plot = figure2, path = "output/plots", width = 30, height = 15, units = "cm")
+figure2
+
+figure3 <- ggarrange(Atrig2, Ixhol1, Ixtas1,
+                    labels = c("A", "B", "C"),
+                    ncol = 3)
+ggsave("combined-map3.pdf", plot = figure3, path = "output/plots", width = 30, height = 15, units = "cm")
+figure3
+```
+
+```{r}
+gp <- ggarrange(
+  Atrig2,                # First row with line plot
+  # Second row with box and dot plots
+  ggarrange(Ixhol1, Ixtas1, ncol = 2, labels = c("B", "C")), 
+  nrow = 2, 
+  labels = "A"       # Label of the line plot
+  ) 
+gp
+
+ggsave("combined-map4.pdf", plot = gp, path = "output/plots", width = 30, height = 15, units = "cm")
+```
+
