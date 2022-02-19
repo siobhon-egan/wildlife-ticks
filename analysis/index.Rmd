@@ -8,5 +8,8 @@ editor_options:
   chunk_output_type: console
 ---
 
-Australian ticks
+In the spirit of reproducibility this project website is created that outlines analysis done relating to analysis of Australian ticks.
+
+ 
+Project website available here http://siobhonlegan.com/wildlife-ticks/ and source code is available at https://github.com/siobhon-egan/wildlife-ticks/
 
