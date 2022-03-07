@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Ixodida 12S rDNA NGS</title>
+
+<script src="site_libs/header-attrs-2.11.22/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">wildlife-ticks</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+<li>
+  <a href="tickID.html">
+    <span class="fa fa-microscope"></span>
+     
+    Tick Identification
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-map-pin"></span>
+     
+    Mapping
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="mapsInteractive.html">Interactive maps</a>
+    </li>
+    <li>
+      <a href="mapsFigures.html">Species maps</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="Ixodida12SNGS.html">
+    <span class="fa fa-laptop"></span>
+     
+    Bioinformatics
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/siobhon-egan/wildlife-ticks">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Ixodida 12S rDNA NGS</h1>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-03-07
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>wildlife-ticks/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version 1.7.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210211code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210211)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210211code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210211)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsiobhoneganwildlifetickstree7b4fd7e9d331c0cf7e7486b2f5d9e8af80ad6437targetblank7b4fd7ea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/siobhon-egan/wildlife-ticks/tree/7b4fd7e9d331c0cf7e7486b2f5d9e8af80ad6437" target="_blank">7b4fd7e</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsiobhoneganwildlifetickstree7b4fd7e9d331c0cf7e7486b2f5d9e8af80ad6437targetblank7b4fd7ea" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/siobhon-egan/wildlife-ticks/tree/7b4fd7e9d331c0cf7e7486b2f5d9e8af80ad6437" target="_blank">7b4fd7e</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    analysis/_footer.html
+    Ignored:    output/.DS_Store
+    Ignored:    output/plots/.DS_Store
+
+Untracked files:
+    Untracked:  .Rprofile
+    Untracked:  ENA_submission/
+    Untracked:  NCBI_submission/
+    Untracked:  analysis/images/
+    Untracked:  data/
+    Untracked:  experiments/
+    Untracked:  flex.Rmd
+    Untracked:  flex.html
+    Untracked:  list.csv
+    Untracked:  output/plots/allmap1.pdf
+    Untracked:  output/plots/allmap2.pdf
+    Untracked:  output/plots/allmapala1.pdf
+    Untracked:  output/plots/allmapala2.pdf
+    Untracked:  output/plots/combined-map5.pdf
+    Untracked:  output/plots/combined-map6.pdf
+    Untracked:  output/plots/combined-map7.pdf
+    Untracked:  output/plots/combined-map8.pdf
+    Untracked:  output/plots/map-ala.html
+    Untracked:  output/plots/map-ala_files/
+    Untracked:  output/plots/map-all-ala.html
+    Untracked:  output/plots/map-all-ala_files/
+    Untracked:  output/plots/map-all-curated.html
+    Untracked:  output/plots/map-all-curated_files/
+    Untracked:  output/plots/map-atrig-facet-edit.pdf
+    Untracked:  output/plots/map-atrig-facet-edit.png
+    Untracked:  output/plots/map-atrig-facet-edit.svg
+    Untracked:  output/plots/map-atrig-subspecies1.pdf
+    Untracked:  output/plots/map-atrig-subspecies2.pdf
+    Untracked:  output/plots/map-atrig1.pdf
+    Untracked:  output/plots/map-atrig2.pdf
+    Untracked:  output/plots/map-ixhol1-edit.pdf
+    Untracked:  output/plots/map-ixhol1-edit.png
+    Untracked:  output/plots/map-ixhol1-edit.svg
+    Untracked:  output/plots/map-ixtas1-edit.pdf
+    Untracked:  output/plots/map-ixtas1-edit.png
+    Untracked:  output/plots/map-ixtas1-edit.svg
+    Untracked:  output/plots/maplegend-ala.pdf
+    Untracked:  output/plots/maplegend-edit.pdf
+    Untracked:  output/plots/maplegend-edit.png
+    Untracked:  output/plots/maplegend-edit.svg
+    Untracked:  output/plots/maplegend.pdf
+    Untracked:  speciesNames.csv
+    Untracked:  temp/
+
+Unstaged changes:
+    Modified:   README.md
+    Modified:   analysis/_site.yml
+    Deleted:    analysis/mapping.Rmd
+    Deleted:    output/plots/combined-map.pdf
+    Modified:   output/plots/combined-map1.pdf
+    Modified:   output/plots/combined-map2.pdf
+    Modified:   output/plots/combined-map3.pdf
+    Modified:   output/plots/combined-map4.pdf
+    Deleted:    output/plots/map-atrig-comb-nolegend.pdf
+    Deleted:    output/plots/map-atrig-comb.pdf
+    Modified:   output/plots/map-atrig-facet.pdf
+    Deleted:    output/plots/map-atrig-simple1.pdf
+    Deleted:    output/plots/map-atrig-simple2.pdf
+    Modified:   output/plots/map-ixhol1.pdf
+    Modified:   output/plots/map-ixhol2.pdf
+    Modified:   output/plots/map-ixtas1.pdf
+    Modified:   output/plots/map-ixtas2.pdf
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/Ixodida12SNGS.Rmd</code>) and HTML (<code>docs/Ixodida12SNGS.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/siobhon-egan/wildlife-ticks/blob/7b4fd7e9d331c0cf7e7486b2f5d9e8af80ad6437/analysis/Ixodida12SNGS.Rmd" target="_blank">7b4fd7e</a>
+</td>
+<td>
+Siobhon Egan
+</td>
+<td>
+2022-03-07
+</td>
+<td>
+Update prj website
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="bioinformatics" class="section level2">
+<h2>Bioinformatics</h2>
+<p>Retrieve information for GenBank sequences used in the 12S rDNA phylogenetic analysis.</p>
+<pre class="r"><code>library(readxl)
+df &lt;- read_excel(&quot;data/12S_zotu_tree/MAFFT_aln_one_outgroup_refined_highlighted.xlsx&quot;)
+View(df)</code></pre>
+<pre class="r"><code>library(ape)
+ref &lt;- df$GenBank
+## Copy/paste or type the following commands if you
+## want to try them.
+# }
+# NOT RUN {
+Rampho &lt;- read.GenBank(ref)
+## get the species names:
+attr(Rampho, &quot;species&quot;)
+## build a matrix with the species names and the accession numbers:
+sp &lt;- cbind(attr(Rampho, &quot;species&quot;), names(Rampho))
+write.csv(sp, &quot;data/12S_zotu_tree/speciesNames.csv&quot;)
+## print the first sequence
+## (can be done with `Rampho$U15717&#39; as well)
+Rampho[[1]]
+## the description from each FASTA sequence:
+attr(Rampho, &quot;description&quot;)
+# }</code></pre>
+<div id="analysis-of-high-throughput-12s-rdna-data" class="section level3">
+<h3>Analysis of high-throughput 12S rDNA data</h3>
+<pre class="bash"><code>source(../code/usearch11_12S_Ixodida.sh)</code></pre>
+<pre class="bash"><code># Enter raw data directorry
+raw_data=&quot;raw_data&quot;
+# Enter raw read information on raw sequences
+read_summary=&quot;1.read_sumary&quot;
+# Enter directory for merged output
+merged_data=&quot;2.merged_data&quot;
+# Enter max diff for merging - default 5 but should increase for paired end
+maxdiffs=&quot;15&quot;
+# Enter minimum merge overlap - default is 16 bp
+overlap=&quot;20&quot;
+# Enter directory for sequences that are matched to primers
+primer_matched=&quot;3a.primer_matches&quot;
+# Enter directory for sequences that do not match primers
+primer_not_matched=&quot;3b.primer_not_matched&quot;
+# Enter forward sequences (5&#39;-3&#39;). Wildcard letters indicating degenerate positions in the primer are supported. See IUPAC(https://drive5.com/usearch/manual/IUPAC_codes.html) codes for details.
+fwd_primer=&quot;AAACTAGGATTAGATACCCT&quot; #12S Ixodida primer T1B, ref Beati and Keirans, J Parasitol (2001) 87(1):32-48
+rev_primer=&quot;AATGAGAGCGACGGGCGATGT&quot; #12S Ixodida primer T2A, ref Beati and Keirans, J Parasitol (2001) 87(1):32-48
+# Enter directory for quality filtered output
+QF=&quot;4.quality_filtered&quot;
+# Enter max error rate. Natural choice is 1, however may want to decrease to 0.5 or 0.25 for more stringent filtering.
+max_ee=&quot;1&quot;
+# Enter min length of sequence for trimming in bp (eg. to keep all seqs above 200 bp enter &quot;200&quot;)
+minlen=&quot;150&quot;
+# Enter directory for labeled data
+labeled_data=&quot;5.labeled_data&quot;
+# Enter directory for dereplicated sequences
+derep_dir=&quot;6.derep_data&quot;
+# Enter directory for singlteton filter data
+SF=&quot;7.singleton_filtered&quot;
+# Enter directory for singlteton sequences
+low_abund_seqs=&quot;8.singleton_sequences&quot;
+# Enter max size to discard i.e. to discard singletons = 1, duplicates = 2
+maxsize=&quot;1&quot;
+# Enter directory for sequence clustering
+cluster=&quot;9.cluster&quot;
+# Enter sub-directory for uparse_otu clustering
+uparse_otus=&quot;9a.otus&quot;
+# Enter sub-directory for unoise_zotu clustering
+unoise_zotus=&quot;9b.zotus&quot;
+
+
+##########################################################################################
+# DO NOT EDIT BELOW THIS LINE
+##########################################################################################
+
+##########################################################################################
+
+gunzip ${raw_data}/*.fastq.gz
+
+#echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#echo Read summary of raw .fastq sequences
+#echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Prouduce a short summary report of raw fastq sequences using `-fastx_info` command.
+# Expected error should be &lt;2 for both forward and reverse reads. Usually reverse reads have a higher error rate.
+
+#mkdir $read_summary
+
+#for fq in $raw_data/*R1*.fastq
+#  do
+#    echo &quot;&quot;
+#    echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#    echo &quot;fastq_info forward reads&quot;
+#
+#    usearch11.0.667_i86osx64 -fastx_info $fastq -output $read_summary/a_fwd_fastq_info.txt
+#done
+
+#for fq in $raw_data/*R2*.fastq
+#  do
+#    echo &quot;&quot;
+#    echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#    echo &quot;fastq_info forward reads&quot;
+
+#    usearch11.0.667_i86osx64 -fastx_info $fastq -output $read_summary/b_rev_fastq_info.txt
+#done
+
+##########################################################################################
+
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+echo Merging paried illumina .fastq sequences
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Merge paired-end reads using `-fastq_mergepairs` command, and rename sequences. This would be done before primers are trimmed.
+
+mkdir ${merged_data}
+mkdir working1
+
+#*****************************************************************************************
+# Part 1: merge reads
+
+for file1 in ${raw_data}/*R1.fastq
+  do
+    echo &quot;&quot;
+        echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        echo Merging paired reads
+        echo forward reads are:
+        echo $(basename ${file1})
+        echo reverse reads are:
+        echo $(basename ${file1} R1.fastq)R2.fastq
+
+    usearch11.0.667_i86osx64 -fastq_mergepairs ${file1} -reverse &quot;${raw_data}/$(basename -s R1.fastq ${file1})R2.fastq&quot; -fastqout &quot;working1/$(basename &quot;$file1&quot;)&quot; -fastq_maxdiffs ${maxdiffs} -fastq_minovlen ${overlap} -report ${merged_data}/2a_merging_seqs_report.txt -tabbedout ${merged_data}/2b_tabbedout.txt
+done
+
+#*****************************************************************************************
+# Part 2: Remove &quot;_L001_R1_001&quot; from filenames
+
+for file2 in working1/*.fastq
+    do
+        rm -rfile2} _L001_R1.fastq).fastq&quot;
+    mv ${file2} ${merged_data}/${rename}
+done
+
+#*****************************************************************************************
+# Removing working directory
+
+rm -r working1
+
+##########################################################################################
+
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+echo Triming primers and distal bases
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# The `-search_pcr2` command searches for matches to a primer pair and outputs the sequence in between (i.e. amplicon with primers removed) into `primer_matched` file
+
+mkdir ${primer_matched}
+mkdir ${primer_not_matched}
+
+for file3 in ${merged_data}/*.fastq
+    do
+
+    usearch11.0.667_i86osx64 -search_pcr2 ${file3} -fwdprimer ${fwd_primer} \
+    -revprimer ${rev_primer} \
+    -strand both -fastqout &quot;${primer_matched}/$(basename ${file3})&quot; -notmatchedfq &quot;${primer_not_matched}/$(basename ${file3})&quot; -tabbedout ${primer_matched}pcr2_output.txt
+done
+
+##########################################################################################
+
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+echo Quality control and removing dimer seqs
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Quality filtering of fastq files using the `-fastq_filter` command, output gives fasta files.
+
+mkdir ${QF}
+
+for file4 in ${primer_matched}/*.fastq
+    do
+        echo &quot;&quot;
+        echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        echo Quality control and removing dimer seqs
+        echo input is:
+        echo ${file4}
+
+    usearch11.0.667_i86osx64 -fastq_filter ${file4} -fastaout &quot;${QF}/$(basename &quot;$file4&quot; .fastq).fasta&quot; -fastq_maxee ${max_ee} -fastq_minlen ${minlen}
+done
+
+##########################################################################################
+
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+echo Renameing sequences with &quot;&gt;barcodelabel=sample_id;sequence_id&quot;
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# For this script to run correctly input fasta label must be formatted &gt;sequence_id and filename must be sample_id.fasta.
+# Result will be &quot;&gt;barcodelabel=sample_id;sequenceid&quot;
+
+mkdir ${labeled_data}
+mkdir working2
+
+#*****************************************************************************************
+# Part 1: Remove &quot;&gt;&quot; from start of sequence_ID
+
+for file5 in ${QF}/*.fasta
+    do
+        sed -e &#39;s/&gt;/&gt;barcodelabel=;/g&#39; ${file5} &gt; working2/$(basename &quot;$file5&quot; .fasta).txt
+done
+
+#*****************************************************************************************
+# Part 2: Add sample_ID (should be filename) to produce &quot;&gt;barcodelabel=sample_ID;sequence_ID&quot;
+
+for file6 in working2/*.txt
+    do
+        sample_id=$(basename ${file6} .txt)
+        echo ${sample_id}
+
+    sed -e &quot;s/;/${sample_id};/g&quot; ${file6} &gt; &quot;${labeled_data}/$(basename &quot;$file6&quot; .txt).fasta&quot;
+done
+
+#*****************************************************************************************
+# Remove working directories
+
+rm -r working2
+
+################################################################################################
+
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+echo Removing low abundant seqs singletons per sample
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Remove low abundant sequences (e.g. singletons) in samples using the `-fastx_uniques` command
+
+mkdir ${derep_dir}
+mkdir ${SF}
+mkdir ${low_abund_seqs}
+
+#*****************************************************************************************
+# Part 1: Dereplicating
+
+for file7 in ${labeled_data}/*.fasta
+    do
+        echo &quot;&quot;
+        echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        echo Removing singletons step 1: derep_fulllength
+        echo input is:
+        echo ${file7}
+
+        usearch11.0.667_i86osx64 -fastx_uniques ${file7} -fastaout &quot;${derep_dir}/$(basename &quot;$file7&quot; .fasta).fasta&quot; -sizeout
+done
+
+#*****************************************************************************************
+# Part 2: Filtering low abundant seqs {maxsize}
+
+for file8 in ${derep_dir}/*.fasta
+    do
+        echo &quot;&quot;
+        echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        echo Removing singletons step 2: sorting uniques
+        echo input is:
+        echo ${file8}
+
+        usearch11.0.667_i86osx64 -sortbysize ${file8} -fastaout &quot;${low_abund_seqs}/$(basename &quot;$file8&quot; .fasta).fasta&quot; -maxsize ${maxsize}
+done
+
+#*****************************************************************************************
+# Step 3: Mapping reads
+
+for file9 in ${labeled_data}/*.fasta
+    do
+      echo &quot;&quot;
+      echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      echo Removing singletons step 3: mapping reads to low abundant uniques
+      echo input is:
+      echo ${file9}
+
+      usearch11.0.667_i86osx64 -search_exact ${file9} -db &quot;${low_abund_seqs}/$(basename &quot;$file9&quot; .fasta).fasta&quot; -strand plus -notmatched &quot;${SF}/$(basename &quot;$file9&quot; .fasta).fasta&quot;
+done
+
+################################################################################################
+################################################################################################
+
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+echo CLUSTERING
+echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Concatenate all singleton filter sequences into a single fasta file
+# Find the set of unique sequences in an input file, also called dereplication using `-fastx_uniques` command
+
+mkdir ${cluster}
+
+cat ${SF}/*.fasta &gt; ${cluster}/all_SF.fasta
+
+cd ${cluster}
+
+usearch11.0.667_i86osx64 -fastx_uniques all_SF.fasta -fastaout all_SF_DR.fasta -sizeout
+
+#*****************************************************************************************
+
+echo ----------------------------------------------------------------------------
+echo Part a - Generating UPARSE OTUs
+echo ----------------------------------------------------------------------------
+
+# Cluster sequences in 97% operational taxonomic units (OTUs) using UPARSE algorithm `-cluster_otus` command and generate an OTU table
+
+mkdir ${uparse_otus}
+cd ${uparse_otus}
+
+    usearch11.0.667_i86osx64 -cluster_otus ../all_SF_DR.fasta -otus uparse_otus.fasta -relabel OTU
+
+  usearch11.0.667_i86osx64 -usearch_global ../all_SF.fasta -db uparse_otus.fasta -strand both -id 0.97 -otutabout uparse_otu_tab.txt -biomout uparse_otu_biom.biom
+
+  # The next two lines produce a distance matrix file and then a tree (newick format)
+  # Current parameters are a guide only and you will need to optimse them for your data
+  # Large datasets can take a long time, so you can skip this part for now to speed up analysis
+
+#  usearch11.0.667_i86osx64 -calc_distmx uparse_otus.fasta -tabbedout uparse_otus_distmx.txt -maxdist 0.2 -termdist 0.3
+
+#   usearch11.0.667_i86osx64 -cluster_aggd uparse_otus_distmx.txt -treeout uparse_otus_clusters.tree -clusterout uparse_otus_clusters.txt \
+#     -id 0.80 -linkage min
+cd ..
+
+#*****************************************************************************************
+
+echo ----------------------------------------------------------------------------
+echo Part b - Generating UNOISE ZOTUs
+echo ----------------------------------------------------------------------------
+
+# Cluster sequences in zero-radius operational taxonomic units (ZOTUs) using `-unoise3` command and generate a ZOTU table
+
+mkdir ${unoise_zotus}
+cd ${unoise_zotus}
+
+usearch11.0.667_i86osx64 -unoise3 ../all_SF_DR.fasta -zotus unoise_zotus.fasta -tabbedout unoise_tab.txt
+
+usearch11.0.667_i86osx64 -fastx_relabel unoise_zotus.fasta -prefix Otu -fastaout unoise_zotus_relabeled.fasta -keep_annots
+
+usearch11.0.667_i86osx64 -otutab ../all_SF.fasta -zotus unoise_zotus_relabeled.fasta -otutabout unoise_otu_tab.txt -biomout unoise_otu_biom.biom -mapout unoise_map.txt -notmatched unoise_notmatched.fasta -dbmatched dbmatches.fasta -sizeout
+
+  # The next two lines produce a distance matrix file and then a tree (newick format)
+  # Current parameters are a guide only and you will need to optimse them for your data
+  # Large datasets can take a long time, so you can skip this part for now to speed up analysis
+
+#  usearch11.0.667_i86osx64 -calc_distmx unoise_zotus.fasta -tabbedout unoise_zotus_distmx.txt -maxdist 0.2 -termdist 0.3
+
+#  usearch11.0.667_i86osx64 -cluster_aggd unoise_zotus_distmx.txt -treeout unoise_zotus_clusters.tree -clusterout unoise_zotus_clusters.txt \
+#    -id 0.80 -linkage min
+cd ..
+cd ..</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+</div>
+</div>
+</div>
+
+<p>
+    <center>Project website by Siobhon L. Egan, 2022. This site was created in <a href="http://rmarkdown.rstudio.com">R Markdown</a> with <a href="https://github.com/jdblischak/workflowr">workflowr</a></center>
+</p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://github.com/siobhon-egan/wildlife-ticks" class="fa fa-github"></a>
+    <a href="https://twitter.com/siobhon_egan" class="fa fa-twitter"></a>
+    <a href="https://www.siobhonlegan.com" class="fas fa-globe"></a>
+</p>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
