@@ -1,0 +1,411 @@
+---
+title: "Interactive maps"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+editor_options:
+  chunk_output_type: console
+---
+
+>Interactive maps of Australian ticks.
+
+Preparing interactive maps for Australian ticks species. 
+
+Maps are produced using [ozmaps](https://github.com/mdsumner/ozmaps) package.
+
+## Curated tick records
+
+Records have been sourced from museum records, literature and Living Atlas Australia. Occurrence records that lie outside of historic distribution records were inspected and curated.
+
+Occurrence records are not always exhaustive but have been curated to ensure that the full distribution of tick species has been investigated.
+
+```{r libraries, include=FALSE}
+pkgs <- c("ozmaps", "sf", "sp", "rgdal", "raster",
+          "rmapshaper", "ggpubr", "viridis", "plotly",
+          "tidyverse", "readxl")
+lapply(pkgs, require, character.only = TRUE)
+```
+
+
+```{r include=FALSE}
+##########################################
+## Am. triguttatum data
+##########################################
+
+obs.data.atrig <-
+  read_csv("data/tick_records/atrig/compiled_record_list.csv")
+obs.data.atrig$Subspecies <- obs.data.atrig$Tick_subspecies
+
+## clean up data
+
+unique(obs.data.atrig$Tick_species)
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species=="`triguttatum (nymph)`"]<-"triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species=="`triguttatum? (juvenile)`"]<-"triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species=="`triguttatum? (nymph)`"]<-"triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species=="`triguttatum? (nymphs)`"]<-"triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species=="`triguttatum?`"]<-"triguttatum"
+
+##########################################
+## Ix. holocyclus data
+##########################################
+obs.data.ixhol <- read_csv(file = "data/tick_records/ixhol/Ixhol-records-2021-02-23/records-2021-02-23-curated.csv")
+
+##########################################
+## Ix. tasmani data
+##########################################
+# curated records
+obs.data.ixtas <- read_excel("data/tick_records/ixtas/curated.xlsx")
+```
+
+
+
+```{r include=FALSE}
+##########################################
+## Combined record data
+##########################################
+
+raw_records <- read_csv("data/tick_records/comb_tick_records.csv")
+clean_records <- raw_records
+
+unique(clean_records$STATE)
+clean_records$STATE[clean_records$STATE=="W.A."]<-"WA"
+clean_records$STATE[clean_records$STATE=="QLD ?"]<-"QLD"
+clean_records$STATE[clean_records$STATE=="NSW/QLD"]<-""
+clean_records$STATE[clean_records$STATE=="NSW or SA"]<-""
+clean_records$STATE[clean_records$STATE=="N.S.W."]<-"NSW"
+clean_records$STATE[clean_records$STATE=="Vic"]<-"VIC"
+clean_records$STATE[clean_records$STATE=="N.T."]<-"NT"
+clean_records$STATE[clean_records$STATE=="Qld"]<-"QLD"
+clean_records$STATE[clean_records$STATE=="S.A."]<-"SA"
+clean_records$STATE[clean_records$STATE=="Tas."]<-"TAS"
+clean_records$STATE[clean_records$STATE=="Vic."]<-"VIC"
+
+#Update and correct taxonomy of tick genus and species names
+clean_records$GENUS[clean_records$GENUS=="Aponomma"]<-"Bothriocroton"
+clean_records$SPECIES[clean_records$SPECIES=="sanguinensis"]<-"sanguineus"
+
+clean_records$genusspecies <- paste(clean_records$GENUS, clean_records$SPECIES)
+unique(clean_records$genusspecies)
+
+#Filter records
+comb_records_filt <- clean_records %>%
+  filter(!is.na(LATITUDE)) %>%
+  filter(!is.na(SPECIES))%>%
+  filter(!SPECIES == "sp.")
+```
+
+
+```{r include=FALSE}
+### Merge with previous records
+df1 <- comb_records_filt %>% 
+  select(LATITUDE, LONGITUDE, genusspecies)
+
+df2 <- obs.data.atrig 
+df2$genusspecies <- paste(df2$Tick_genus, df2$Tick_species)
+df2 <- df2 %>% 
+  select(Lat, Lon, genusspecies)
+df2 <- rename(df2, 
+              LATITUDE = Lat,
+              LONGITUDE = Lon)
+
+df3 <- obs.data.ixhol %>% 
+  select(Latitude, Longitude, Species)
+df3 <- rename(df3, 
+              LATITUDE = Latitude,
+              LONGITUDE = Longitude,
+              genusspecies = Species)
+
+df4 <- obs.data.ixtas
+df4$genusspecies <- paste(df4$Tick_genus, df4$Tick_species)
+df4 <- df4 %>% 
+  select(Lat, Lon, genusspecies)
+df4 <- rename(df4, 
+              LATITUDE = Lat,
+              LONGITUDE = Lon)
+
+tick.obs.data <- rbind(df1, df2, df3, df4)
+
+# remove overseas species
+overseas_ticks <- c("Amblyomma soembawensis", "Dermacentor variabilis", "Rhipicephalus appendiculatus", "Rhipicephalus microplus", "Margaropus winthemi", "Argas vespertilionis", "NA NA")
+
+tick.obs.data <- tick.obs.data %>%
+  filter(!is.na(LATITUDE)) %>%
+  filter(!genusspecies %in% overseas_ticks)
+```
+
+```{r include=FALSE}
+#Set order for the legend by tick genera.
+
+tick.obs.data$genusspecies <- as.factor(tick.obs.data$genusspecies)
+
+tick.obs.data$genusspecies <-
+  factor(
+    tick.obs.data$genusspecies,
+    levels = c(
+      "Amblyomma albolimbatum",
+      "Amblyomma australiense",
+      "Amblyomma breviscutatum",
+      "Amblyomma calabyi",
+      "Amblyomma echidnae",
+      "Amblyomma fimbriatum",
+      "Amblyomma glauerti",
+      "Amblyomma limbatum",
+      "Amblyomma loculosum",
+      "Amblyomma macropi",
+      "Amblyomma moreliae",
+      "Amblyomma moyi",
+      "Amblyomma papuanum",
+      "Amblyomma postoculatum",
+      "Amblyomma triguttatum",
+      "Amblyomma trimaculatum",
+      "Amblyomma viikirri",
+      "Bothriocroton auruginans",
+      "Bothriocroton concolor",
+      "Bothriocroton glebopalma",
+      "Bothriocroton hydrosauri",
+      "Bothriocroton tachyglossi",
+      "Bothriocroton undatum",
+      "Haemaphysalis bancrofti",
+      "Haemaphysalis bremneri",
+      "Haemaphysalis doenitzi",
+      "Haemaphysalis humerosa",
+      "Haemaphysalis lagostrophi",
+      "Haemaphysalis longicornis",
+      "Haemaphysalis novaeguineae",
+      "Haemaphysalis petrogalis",
+      "Haemaphysalis ratti",
+      "Ixodes antechini",
+      "Ixodes auritulus",
+      "Ixodes australiensis",
+      "Ixodes barkeri",
+      "Ixodes confusus",
+      "Ixodes cordifer",
+      "Ixodes cornuatus",
+      "Ixodes eudyptidis",
+      "Ixodes fecialis",
+      "Ixodes heathi",
+      "Ixodes hirsti",
+      "Ixodes holocyclus",
+      "Ixodes hydromyidis",
+      "Ixodes kerguelenensis",
+      "Ixodes kohlsi",
+      "Ixodes kopsteini",
+      "Ixodes laridis",
+      "Ixodes myrmecobii",
+      "Ixodes ornithorhynchi",
+      "Ixodes simplex",
+      "Ixodes tasmani",
+      "Ixodes trichosuri",
+      "Ixodes uriae",
+      "Ixodes vestitus",
+      "Ixodes victoriensis",
+      "Ixodes woyliei",
+      "Rhipicephalus australis",
+      "Rhipicephalus sanguineus",
+      "Argas falco",
+      "Argas lagenoplastis",
+      "Argas lowryae",
+      "Argas nullarborensis",
+      "Argas persicus",
+      "Argas robertsi",
+      "Carios australiensis",
+      "Carios capensis",
+      "Carios daviesi",
+      "Carios dewae",
+      "Carios macrodermae",
+      "Ornithodoros gurneyi",
+      "Ornithodoros macmillani",
+      "Otobius megnini"
+    )
+  )
+```
+
+
+```{r include=FALSE}
+#Configure base mapping of Australia
+
+oz_states <- ozmaps::ozmap_states
+
+oz_states <- ozmaps::ozmap_states %>% filter(NAME != "Other Territories")
+oz_votes <- rmapshaper::ms_simplify(ozmaps::abs_ced)
+```
+
+```{r include=FALSE}
+curp <- ggplot() +
+  geom_sf(data = oz_votes) +
+   geom_sf(data = oz_states, colour = "black", fill = "NA") +
+  geom_point(
+    data = tick.obs.data,
+    mapping = aes(
+      x = LONGITUDE,
+      y = LATITUDE,
+      color = genusspecies
+    )) +
+  labs(
+    x = "Longitude", 
+    y = "Latitude", 
+    colour = "Tick species",
+    title = "Ticks of Australia"
+  )
+
+curp1 <- curp + xlim (112,154) + ylim (-45,-8) + theme_classic() + scale_color_viridis(discrete=TRUE)
+```
+```{r echo=FALSE}
+ggplotly(curp1)
+```
+
+
+**Occurrence data of Australian ticks from curated records**
+
+```{r, echo=FALSE}
+library(rmarkdown)
+tick.obs.data.save <- tick.obs.data %>%
+  filter(LATITUDE > -45) %>%
+  filter(LATITUDE < -8) %>%
+  filter(LONGITUDE > 112) %>%
+  filter(LONGITUDE < 154)
+
+tick.obs.data.save <- tick.obs.data.save %>%
+  rename(Latitude = LATITUDE, 
+         Longitude = LONGITUDE,
+         Species = genusspecies)
+
+paged_table(tick.obs.data.save)
+```
+
+
+---
+
+## All Living Atlas Australia records.
+
+Occurrence records from Living Atlas Australia using taxonomic classification "Ixodida" (Order level).
+
+```{r include=FALSE}
+obs.data.ala <-
+  read_csv("data/tick_records/IXODIDA-records-2022-02-27/records-2022-02-27.csv")
+
+# Filter out data without species and no coordinates
+obs.data.ala <- obs.data.ala %>%
+  filter(!is.na(species)) %>%
+  filter(!is.na(decimalLatitude))
+
+obs.data.ala$species[obs.data.ala$species=="Argas dewae"]<-"Carios dewae"
+obs.data.ala$species[obs.data.ala$species=="Argas macrodermae"]<-"Carios macrodermae"
+
+#Set order for the legend by tick genera.
+
+obs.data.ala$species <- as.factor(obs.data.ala$species)
+
+obs.data.ala$species <- factor(
+  obs.data.ala$species,
+  levels = c(
+    "Amblyomma albolimbatum",
+    "Amblyomma australiense",
+    "Amblyomma calabyi",
+    "Amblyomma echidnae",
+    "Amblyomma fimbriatum",
+    "Amblyomma flavomaculatum",
+    "Amblyomma glauerti",
+    "Amblyomma limbatum",
+    "Amblyomma loculosum",
+    "Amblyomma macropi",
+    "Amblyomma moreliae",
+    "Amblyomma moyi",
+    "Amblyomma postoculatum",
+    "Amblyomma triguttatum",
+    "Amblyomma trimaculatum",
+    "Amblyomma viikirri",
+    "Bothriocroton auruginans",
+    "Bothriocroton concolor",
+    "Bothriocroton glebopalma",
+    "Bothriocroton hydrosauri",
+    "Bothriocroton tachyglossi",
+    "Bothriocroton undatum",
+    "Haemaphysalis bancrofti",
+    "Haemaphysalis humerosa",
+    "Haemaphysalis lagostrophi",
+    "Haemaphysalis longicornis",
+    "Haemaphysalis petrogalis",
+    "Haemaphysalis ratti",
+    "Ixodes antechini",
+    "Ixodes auritulus",
+    "Ixodes australiensis",
+    "Ixodes cordifer",
+    "Ixodes cornuatus",
+    "Ixodes eudyptidis",
+    "Ixodes fecialis",
+    "Ixodes heathi",
+    "Ixodes hirsti",
+    "Ixodes holocyclus",
+    "Ixodes hydromyidis",
+    "Ixodes kerguelenensis",
+    "Ixodes kohlsi",
+    "Ixodes myrmecobii",
+    "Ixodes ornithorhynchi",
+    "Ixodes tasmani",
+    "Ixodes trichosuri",
+    "Ixodes uriae",
+    "Ixodes victoriensis",
+    "Ixodes woyliei",
+    "Rhipicephalus australis",
+    "Rhipicephalus sanguineus",
+    "Argas lagenoplastis",
+    "Argas persicus",
+    "Argas robertsi",
+    "Carios dewae",
+    "Carios macrodermae",
+    "Ornithodoros gurneyi",
+    "Ornithodoros macmillani"
+  )
+)
+```
+
+```{r include=FALSE}
+pala <- ggplot() +
+  geom_sf(data = oz_votes) +
+   geom_sf(data = oz_states, colour = "black", fill = "NA") +
+  geom_point(
+    data = obs.data.ala,
+    mapping = aes(
+      x = decimalLongitude,
+      y = decimalLatitude,
+      color = species
+    )) +
+  labs(
+    x = "Longitude", 
+    y = "Latitude", 
+    colour = "Tick species",
+    title = "Ticks of Australia - Living Atlas Australia Records"
+  )
+
+pala1 <- pala + xlim (112,154) + ylim (-45,-8) + theme_classic() + scale_color_viridis(discrete=TRUE)
+```
+```{r echo=FALSE}
+ggplotly(pala1)
+```
+
+
+**Occurrence data of Australian ticks from Living Atlas Australia records**
+
+```{r, echo=FALSE}
+library(rmarkdown)
+obs.data.ala.save <- obs.data.ala %>%
+  filter(decimalLatitude > -45) %>%
+  filter(decimalLatitude < -8) %>%
+  filter(decimalLongitude > 112) %>%
+  filter(decimalLongitude < 154)
+
+obs.data.ala.save <- obs.data.ala.save %>%
+  select(decimalLatitude, decimalLongitude, species)
+
+obs.data.ala.save <- obs.data.ala.save %>%
+  rename(Latitude = decimalLatitude, 
+         Longitude = decimalLongitude,
+         Species = species)
+
+paged_table(obs.data.ala.save)
+```
+
+
+

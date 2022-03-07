@@ -1,0 +1,1000 @@
+---
+title: "Mapping"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, warning=FALSE)
+```
+
+
+# Individual species map
+
+Preparing individual species map for three wide spread tick species in Australia. Maps are produced using [ozmaps](https://github.com/mdsumner/ozmaps) package.
+
+Records have been sourced from museum records, literature and Living Atlas Australia. Occurrence records that lie outside of historic distribution records were inspected and curated.
+
+Occurrence records are not always exhaustive but have been curated to ensure that the full distribution of tick species has been investigated.
+
+**Load libraries**
+```{r libraries, message=FALSE, warning=FALSE, results='hide'}
+pkgs <- c("ozmaps", "sf", "sp", "rgdal", "raster",
+          "rmapshaper", "ggpubr", "viridis", "plotly",
+          "tidyverse", "readxl")
+lapply(pkgs, require, character.only = TRUE)
+```
+
+Configure base mapping of Australia
+
+```{r}
+oz_states <- ozmaps::ozmap_states
+oz_states <-
+  ozmaps::ozmap_states %>% filter(NAME != "Other Territories")
+oz_votes <- rmapshaper::ms_simplify(ozmaps::abs_ced)
+p <- ggplot() +
+  geom_sf(data = oz_states,
+          mapping = aes(fill = NAME),
+          show.legend = FALSE) +
+  geom_sf(data = oz_votes, fill = NA) +
+  coord_sf()
+```
+
+## *Amblyomma triguttatum* records
+
+Load data
+```{r}
+obs.data.atrig <-
+  read_csv("data/tick_records/atrig/compiled_record_list.csv")
+obs.data.atrig$Subspecies <- obs.data.atrig$Tick_subspecies
+
+## clean up data
+
+unique(obs.data.atrig$Tick_species)
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species == "`triguttatum (nymph)`"] <-
+  "triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species == "`triguttatum? (juvenile)`"] <-
+  "triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species == "`triguttatum? (nymph)`"] <-
+  "triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species == "`triguttatum? (nymphs)`"] <-
+  "triguttatum"
+obs.data.atrig$Tick_species[obs.data.atrig$Tick_species == "`triguttatum?`"] <-
+  "triguttatum"
+```
+
+
+Create a map showing different subspecies of *Am. triguttatum*
+
+Make map with state and voting outlines, overlay with all observation data
+
+### Combined *Am. triguttatum* maps
+
+**Use colour/shape to show subspecies**
+```{r}
+Atrig1 = ggplot() +
+  geom_sf(data = oz_votes) +
+  geom_sf(data = oz_states) +
+  geom_point(
+    data = obs.data.atrig,
+    mapping = aes(
+      x = Lon,
+      y = Lat,
+      shape = Subspecies,
+      color = Subspecies,
+      stroke = 1
+    )
+  )
+
+# Customise scale
+Atrig1 = Atrig1 + coord_sf() + theme_bw() + theme(axis.title.x = element_blank(),
+                                                  axis.title.y = element_blank()) +
+  scale_color_manual(values = c("#252525", "#1b9e77", "#e7298a", "#66a61e", "#7570b3")) +
+  scale_shape_manual(values = c(16, 17, 15, 3, 7)) + xlim (111, 155)
+Atrig1
+
+# Map without legend
+Atrig2 <- Atrig1 + theme(legend.position = "none") + xlim (111, 155)
+```
+
+```{r, eval=FALSE}
+# Save
+ggsave(
+  "map-atrig-subspecies1.pdf",
+  plot = Atrig1,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+ggsave(
+  "map-atrig-subspecies2.pdf",
+  plot = Atrig2,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+```
+
+**Make simple map grouping all subspecies**
+```{r}
+Atrig3 = ggplot() +
+  geom_sf(data = oz_votes) +
+  geom_sf(data = oz_states,
+          colour = "black",
+          fill = "NA") +
+  geom_point(data = obs.data.atrig,
+             mapping = aes(
+               x = Lon,
+               y = Lat,
+               color = "#7570b3",
+               stroke = 1
+             )) 
+# Customise scale
+Atrig3 = Atrig3 + coord_sf() + theme_bw() + theme(
+  legend.position = "none",
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank()
+)  + scale_color_manual(values = c("#7570b3")) + xlim (111,155)
+Atrig3
+
+# Remove scale
+Atrig4 = Atrig3 + coord_sf() + theme_void() + theme(legend.position = "none")  + scale_color_manual(values = c("#7570b3")) +
+  xlim (111,155)
+```
+Save map
+```{r, eval=FALSE}
+ggsave(
+  "map-atrig1.pdf",
+  plot = Atrig3,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+ggsave(
+  "map-atrig2.pdf",
+  plot = Atrig4,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+```
+
+### Facet by *Am. triguttatum* subspecies map
+
+Uee data with subspecies info and subset map
+
+```{r}
+# Filter out data where subspecies is not specified
+obs.data.ssp = filter(obs.data.atrig, Subspecies != "Not specified")
+
+# make master plot
+Atrig5 = ggplot() +
+  geom_sf(data = oz_votes) +
+  geom_sf(data = oz_states,
+          colour = "black",
+          fill = "NA") +
+  geom_point(
+    data = obs.data.ssp,
+    mapping = aes(
+      x = Lon,
+      y = Lat,
+      shape = Subspecies,
+      color = Subspecies,
+      stroke = 1
+    )
+  ) +
+  coord_sf() + theme_bw() +
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()
+  ) +
+  scale_color_manual(values = c("#1b9e77", "#e7298a", "#66a61e", "#7570b3")) +
+  scale_shape_manual(values = c(17, 15, 3, 7)) + xlim (111, 155)
+# Facet
+Atrig5 = Atrig5 + facet_wrap( ~ Subspecies)
+Atrig5
+```
+
+```{r, eval=FALSE}
+# Save
+ggsave(
+  "map-atrig-facet.pdf",
+  plot = Atrig5,
+  path = "output/plots",
+  width = 30,
+  height = 20,
+  units = "cm"
+)
+```
+
+## Map of *Ixodes holocyclus* records
+
+Load data
+```{r}
+# raw ala records
+ixhol.ala <-
+  read_csv(file = "data/tick_records/ixhol/Ixhol-records-2021-02-23/records-2021-02-23.csv")
+# curated ala records - removed likely incorrect (or as a result of travel?) records from WA, SA and TAS.
+obs.data.ixhol <-
+  read_csv(file = "data/tick_records/ixhol/Ixhol-records-2021-02-23/records-2021-02-23-curated.csv")
+```
+
+Make map with state and voting outlines, overlay with all observation data
+```{r}
+Ixhol = ggplot() +
+  geom_sf(data = oz_votes) +
+  geom_sf(data = oz_states,
+          colour = "black",
+          fill = "NA") +
+  geom_point(
+    data = obs.data.ixhol,
+    mapping = aes(
+      x = Longitude,
+      y = Latitude,
+      color = "#d95f02",
+      stroke = 1
+    )
+  )
+# Customise scale
+Ixhol1 = Ixhol + coord_sf() + theme_bw() + theme(
+  legend.position = "none",
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank()
+)  + scale_color_manual(values = c("#d95f02")) + xlim (111, 155)
+Ixhol1
+# Remove scale
+Ixhol2 = Ixhol + coord_sf() + theme_void() + theme(legend.position = "none")  + scale_color_manual(values =
+                                                                                                     c("#d95f02")) + xlim (111, 155)
+```
+Save maps
+```{r, eval=FALSE}
+ggsave(
+  "map-ixhol1.pdf",
+  plot = Ixhol1,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+ggsave(
+  "map-ixhol2.pdf",
+  plot = Ixhol2,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+```
+
+## Map of *Ixodes tasmani* records
+
+Load data
+```{r}
+# curated records
+obs.data.ixtas <- read_excel("data/tick_records/ixtas/curated.xlsx")
+```
+
+Make map with state and voting outlines, overlay with all observation data
+```{r}
+Ixtas = ggplot() +
+  geom_sf(data = oz_votes) +
+  geom_sf(data = oz_states,
+          colour = "black",
+          fill = "NA") +
+  geom_point(data = obs.data.ixtas,
+             mapping = aes(
+               x = Lon,
+               y = Lat,
+               color = "#a6761d",
+               stroke = 1
+             ))
+# Customise scale
+Ixtas1 = Ixtas + coord_sf() + theme_bw() + theme(
+  legend.position = "none",
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank()
+)  + scale_color_manual(values = c("#a6761d"))  + xlim (111, 155)
+Ixtas1
+# Remove scale
+Ixtas2 = Ixtas1 + coord_sf() + theme_void() + theme(legend.position = "none")  + scale_color_manual(values =
+                                                                                                      c("#a6761d")) + xlim (111, 155)
+```
+Save maps
+```{r, eval=FALSE}
+ggsave(
+  "map-ixtas1.pdf",
+  plot = Ixtas1,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+ggsave(
+  "map-ixtas2.pdf",
+  plot = Ixtas2,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+```
+
+# Combined map
+
+Make combine map of *Am. trig*, *Ix. hol* and *Ix. tas*.
+
+## Using *Am. triguttatum* subspecies maps
+
+```{r, eval=FALSE}
+figure1 <- ggarrange(
+  Atrig2,
+  Ixhol1,
+  Ixtas1,
+  labels = c("A", "B", "C"),
+  ncol = 2,
+  nrow = 2
+)
+ggsave(
+  "combined-map1.pdf",
+  plot = figure1,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+figure1
+
+figure2 <- ggarrange(Atrig2,
+                     Ixhol1,
+                     Ixtas1,
+                     labels = c("A", "B", "C"),
+                     nrow = 3)
+ggsave(
+  "combined-map2.pdf",
+  plot = figure2,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+figure2
+
+figure3 <- ggarrange(Atrig2,
+                     Ixhol1,
+                     Ixtas1,
+                     labels = c("A", "B", "C"),
+                     ncol = 3)
+ggsave(
+  "combined-map3.pdf",
+  plot = figure3,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+figure3
+```
+
+```{r, eval=FALSE}
+gp <- ggarrange(
+  Atrig2,
+  # First row with line plot
+  # Second row with box and dot plots
+  ggarrange(Ixhol1, Ixtas1, ncol = 2, labels = c("B", "C")),
+  nrow = 2,
+  labels = "A"       # Label of the line plot
+)
+gp
+
+ggsave(
+  "combined-map4.pdf",
+  plot = gp,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+```
+
+## Using *Am. triguttatum* combine maps
+
+```{r, eval=FALSE}
+figure1 <- ggarrange(
+  Atrig3,
+  Ixhol1,
+  Ixtas1,
+  labels = c("A", "B", "C"),
+  ncol = 2,
+  nrow = 2
+)
+ggsave(
+  "combined-map5.pdf",
+  plot = figure1,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+figure1
+
+figure2 <- ggarrange(Atrig3,
+                     Ixhol1,
+                     Ixtas1,
+                     labels = c("A", "B", "C"),
+                     nrow = 3)
+ggsave(
+  "combined-map6.pdf",
+  plot = figure2,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+figure2
+
+figure3 <- ggarrange(Atrig3,
+                     Ixhol1,
+                     Ixtas1,
+                     labels = c("A", "B", "C"),
+                     ncol = 3)
+ggsave(
+  "combined-map7.pdf",
+  plot = figure3,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+figure3
+```
+
+```{r, eval=FALSE}
+gp <- ggarrange(
+  Atrig3,
+  # First row with line plot
+  # Second row with box and dot plots
+  ggarrange(Ixhol1, Ixtas1, ncol = 2, labels = c("B", "C")),
+  nrow = 2,
+  labels = "A"       # Label of the line plot
+)
+gp
+
+ggsave(
+  "combined-map8.pdf",
+  plot = gp,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+```
+
+
+
+-----
+
+# All records of Australian ticks
+
+## Curated data
+
+> First set of plots contains occurance data from curated plots
+Load data which contains combined records from ANIC, WAM, Living Atlas Australia and publications.
+
+
+```{r}
+raw_records <- read_csv("data/tick_records/comb_tick_records.csv")
+head(raw_records)
+```
+
+
+### Clean up data
+
+Correct states
+```{r}
+clean_records <- raw_records
+
+unique(clean_records$STATE)
+clean_records$STATE[clean_records$STATE == "W.A."] <- "WA"
+clean_records$STATE[clean_records$STATE == "QLD ?"] <- "QLD"
+clean_records$STATE[clean_records$STATE == "NSW/QLD"] <- ""
+clean_records$STATE[clean_records$STATE == "NSW or SA"] <- ""
+clean_records$STATE[clean_records$STATE == "N.S.W."] <- "NSW"
+clean_records$STATE[clean_records$STATE == "Vic"] <- "VIC"
+clean_records$STATE[clean_records$STATE == "N.T."] <- "NT"
+clean_records$STATE[clean_records$STATE == "Qld"] <- "QLD"
+clean_records$STATE[clean_records$STATE == "S.A."] <- "SA"
+clean_records$STATE[clean_records$STATE == "Tas."] <- "TAS"
+clean_records$STATE[clean_records$STATE == "Vic."] <- "VIC"
+```
+
+Update and correct taxonomy of tick genus and species names
+```{r}
+clean_records$GENUS[clean_records$GENUS == "Aponomma"] <-
+  "Bothriocroton"
+clean_records$SPECIES[clean_records$SPECIES == "sanguinensis"] <-
+  "sanguineus"
+
+clean_records$genusspecies <-
+  paste(clean_records$GENUS, clean_records$SPECIES)
+unique(clean_records$genusspecies)
+```
+
+Filter records
+```{r}
+comb_records_filt <- clean_records %>%
+  filter(!is.na(LATITUDE)) %>%
+  filter(!is.na(SPECIES)) %>%
+  filter(!SPECIES == "sp.")
+```
+
+
+### Merge with previous records
+
+Merge full records with curated records for *Am. triguttatum*, *Ix. holocyclus* and *Ix. tasmani*.
+```{r}
+df1 <-
+  comb_records_filt %>% select(LATITUDE, LONGITUDE, genusspecies)
+
+df2 <- obs.data.atrig
+df2$genusspecies <- paste(df2$Tick_genus, df2$Tick_species)
+df2 <- df2 %>% select(Lat, Lon, genusspecies)
+df2 <- rename(df2,
+              LATITUDE = Lat,
+              LONGITUDE = Lon)
+
+df3 <- obs.data.ixhol %>% select(Latitude, Longitude, Species)
+df3 <- rename(df3,
+              LATITUDE = Latitude,
+              LONGITUDE = Longitude,
+              genusspecies = Species)
+
+df4 <- obs.data.ixtas
+df4$genusspecies <- paste(df4$Tick_genus, df4$Tick_species)
+df4 <- df4 %>% select(Lat, Lon, genusspecies)
+df4 <- rename(df4,
+              LATITUDE = Lat,
+              LONGITUDE = Lon)
+
+tick.obs.data <- rbind(df1, df2, df3, df4)
+```
+
+Final filter of records - also filtering single record of *Argas vespertilionis* in WAM database - I think given single record this is most likely an incorrect identification.
+```{r}
+# # remove overseas species
+overseas_ticks <-
+  c(
+    "Amblyomma soembawensis",
+    "Dermacentor variabilis",
+    "Rhipicephalus appendiculatus",
+    "Rhipicephalus microplus",
+    "Margaropus winthemi",
+    "Argas vespertilionis",
+    "NA NA"
+  )
+
+tick.obs.data <- tick.obs.data %>%
+  filter(!is.na(LATITUDE)) %>%
+  filter(!genusspecies %in% overseas_ticks)
+```
+
+
+### Plot
+
+Make combined plot of all tick species recorded in Australia.
+```{r}
+oz_states <- ozmaps::ozmap_states
+
+oz_states <-
+  ozmaps::ozmap_states %>% filter(NAME != "Other Territories")
+oz_votes <- rmapshaper::ms_simplify(ozmaps::abs_ced)
+```
+
+Set order for the legend by tick genera.
+```{r}
+levels(tick.obs.data$genusspecies)
+tick.obs.data$genusspecies <- as.factor(tick.obs.data$genusspecies)
+levels(tick.obs.data$genusspecies)
+
+tick.obs.data$genusspecies <-
+  factor(
+    tick.obs.data$genusspecies,
+    levels = c(
+      "Amblyomma albolimbatum",
+      "Amblyomma australiense",
+      "Amblyomma breviscutatum",
+      "Amblyomma calabyi",
+      "Amblyomma echidnae",
+      "Amblyomma fimbriatum",
+      "Amblyomma glauerti",
+      "Amblyomma limbatum",
+      "Amblyomma loculosum",
+      "Amblyomma macropi",
+      "Amblyomma moreliae",
+      "Amblyomma moyi",
+      "Amblyomma papuanum",
+      "Amblyomma postoculatum",
+      "Amblyomma triguttatum",
+      "Amblyomma trimaculatum",
+      "Amblyomma viikirri",
+      "Bothriocroton auruginans",
+      "Bothriocroton concolor",
+      "Bothriocroton glebopalma",
+      "Bothriocroton hydrosauri",
+      "Bothriocroton tachyglossi",
+      "Bothriocroton undatum",
+      "Haemaphysalis bancrofti",
+      "Haemaphysalis bremneri",
+      "Haemaphysalis doenitzi",
+      "Haemaphysalis humerosa",
+      "Haemaphysalis lagostrophi",
+      "Haemaphysalis longicornis",
+      "Haemaphysalis novaeguineae",
+      "Haemaphysalis petrogalis",
+      "Haemaphysalis ratti",
+      "Ixodes antechini",
+      "Ixodes auritulus",
+      "Ixodes australiensis",
+      "Ixodes barkeri",
+      "Ixodes confusus",
+      "Ixodes cordifer",
+      "Ixodes cornuatus",
+      "Ixodes eudyptidis",
+      "Ixodes fecialis",
+      "Ixodes heathi",
+      "Ixodes hirsti",
+      "Ixodes holocyclus",
+      "Ixodes hydromyidis",
+      "Ixodes kerguelenensis",
+      "Ixodes kohlsi",
+      "Ixodes kopsteini",
+      "Ixodes laridis",
+      "Ixodes myrmecobii",
+      "Ixodes ornithorhynchi",
+      "Ixodes simplex",
+      "Ixodes tasmani",
+      "Ixodes trichosuri",
+      "Ixodes uriae",
+      "Ixodes vestitus",
+      "Ixodes victoriensis",
+      "Ixodes woyliei",
+      "Rhipicephalus australis",
+      "Rhipicephalus sanguineus",
+      "Argas falco",
+      "Argas lagenoplastis",
+      "Argas lowryae",
+      "Argas nullarborensis",
+      "Argas persicus",
+      "Argas robertsi",
+      "Carios australiensis",
+      "Carios capensis",
+      "Carios daviesi",
+      "Carios dewae",
+      "Carios macrodermae",
+      "Ornithodoros gurneyi",
+      "Ornithodoros macmillani",
+      "Otobius megnini"
+    )
+  )
+```
+
+```{r}
+p <- ggplot() +
+  geom_sf(data = oz_votes) +
+   geom_sf(data = oz_states, colour = "black", fill = "NA") +
+  geom_point(
+    data = tick.obs.data,
+    mapping = aes(
+      x = LONGITUDE,
+      y = LATITUDE,
+      color = genusspecies
+    )) +
+  labs(
+    x = "Longitude", 
+    y = "Latitude", 
+    colour = "Tick species",
+    title = "Ticks of Australia"
+  )
+
+p1 <-
+  p + xlim (112, 154) + ylim (-45, -8) + theme_classic() + scale_color_viridis(discrete =
+                                                                                 TRUE)
+
+ggplotly(p1)
+```
+
+```{r}
+p1.plotly <- plotly::ggplotly(p1)
+
+htmlwidgets::saveWidget(p1.plotly, "output/plots/map-all-curated.html")
+```
+
+
+```{r eval=FALSE, include=FALSE}
+#### Formatting for saving as pdf version
+
+# theme 1 with scale
+allmap1 = p + coord_sf() + theme_bw() + theme(
+  legend.position = "none",
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank()
+) + ylim (-45, -8) + xlim (112, 154) + scale_color_viridis(discrete = TRUE)
+
+# theme 2 without scale
+allmap2 = allmap1 + coord_sf() + theme_void() + theme(legend.position = "none") + ylim (-45, -8) + xlim (112, 154) + scale_color_viridis(discrete =
+                                                                                                                                           TRUE)
+
+# save
+ggsave(
+  "allmap1.pdf",
+  plot = allmap1,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+ggsave(
+  "allmap2.pdf",
+  plot = allmap2,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+
+#### just save legend
+library(grid)
+library(gridExtra) 
+
+# format map with legend
+
+maplegend = p + coord_sf() +
+  theme_bw() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  ylim (-45, -8) + xlim (112, 154) +
+  scale_color_viridis(discrete = TRUE) +
+  theme(legend.text = element_text(size = 7, face = "italic"))
+
+ggsave(
+  "maplegend.pdf",
+  plot = maplegend,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+
+legend <- cowplot::get_legend(maplegend)
+
+grid.newpage()
+pdf("output/plots/maplegend.pdf")
+grid.draw(legend)
+dev.off()
+```
+
+#### Data behind the map
+
+Occurrence of data of Australian ticks.
+
+```{r eval=FALSE, include=FALSE}
+library(rmarkdown)
+tick.obs.data.save <- tick.obs.data %>%
+  filter(LATITUDE > -45) %>%
+  filter(LATITUDE < -8) %>%
+  filter(LONGITUDE > 112) %>%
+  filter(LONGITUDE < 154)
+
+paged_table(tick.obs.data.save)
+```
+
+
+---
+
+## All Living Atlas Australia records.
+
+Search of Living Atlas Australia using taxonomic classification "Ixodida" (Order level).
+
+```{r}
+obs.data.ala <-
+  read_csv("data/tick_records/IXODIDA-records-2022-02-27/records-2022-02-27.csv")
+
+# Filter out data without species and no coordinates
+obs.data.ala <- obs.data.ala %>%
+  filter(!is.na(species)) %>%
+  filter(!is.na(decimalLatitude))
+```
+
+```{r}
+obs.data.ala$species[obs.data.ala$species=="Argas dewae"]<-"Carios dewae"
+obs.data.ala$species[obs.data.ala$species=="Argas macrodermae"]<-"Carios macrodermae"
+```
+
+Prepare base map
+```{r}
+oz_states <- ozmaps::ozmap_states
+
+oz_states <-
+  ozmaps::ozmap_states %>% filter(NAME != "Other Territories")
+oz_votes <- rmapshaper::ms_simplify(ozmaps::abs_ced)
+```
+
+Set order for the legend by tick genera.
+```{r}
+levels(obs.data.ala$species)
+obs.data.ala$species <- as.factor(obs.data.ala$species)
+levels(obs.data.ala$species)
+
+obs.data.ala$species <- factor(
+  obs.data.ala$species,
+  levels = c(
+    "Amblyomma albolimbatum",
+    "Amblyomma australiense",
+    "Amblyomma calabyi",
+    "Amblyomma echidnae",
+    "Amblyomma fimbriatum",
+    "Amblyomma flavomaculatum",
+    "Amblyomma glauerti",
+    "Amblyomma limbatum",
+    "Amblyomma loculosum",
+    "Amblyomma macropi",
+    "Amblyomma moreliae",
+    "Amblyomma moyi",
+    "Amblyomma postoculatum",
+    "Amblyomma triguttatum",
+    "Amblyomma trimaculatum",
+    "Amblyomma viikirri",
+    "Bothriocroton auruginans",
+    "Bothriocroton concolor",
+    "Bothriocroton glebopalma",
+    "Bothriocroton hydrosauri",
+    "Bothriocroton tachyglossi",
+    "Bothriocroton undatum",
+    "Haemaphysalis bancrofti",
+    "Haemaphysalis humerosa",
+    "Haemaphysalis lagostrophi",
+    "Haemaphysalis longicornis",
+    "Haemaphysalis petrogalis",
+    "Haemaphysalis ratti",
+    "Ixodes antechini",
+    "Ixodes auritulus",
+    "Ixodes australiensis",
+    "Ixodes cordifer",
+    "Ixodes cornuatus",
+    "Ixodes eudyptidis",
+    "Ixodes fecialis",
+    "Ixodes heathi",
+    "Ixodes hirsti",
+    "Ixodes holocyclus",
+    "Ixodes hydromyidis",
+    "Ixodes kerguelenensis",
+    "Ixodes kohlsi",
+    "Ixodes myrmecobii",
+    "Ixodes ornithorhynchi",
+    "Ixodes tasmani",
+    "Ixodes trichosuri",
+    "Ixodes uriae",
+    "Ixodes victoriensis",
+    "Ixodes woyliei",
+    "Rhipicephalus australis",
+    "Rhipicephalus sanguineus",
+    "Argas lagenoplastis",
+    "Argas persicus",
+    "Argas robertsi",
+    "Carios dewae",
+    "Carios macrodermae",
+    "Ornithodoros gurneyi",
+    "Ornithodoros macmillani"
+  )
+)
+```
+
+```{r}
+p <- ggplot() +
+  geom_sf(data = oz_votes) +
+   geom_sf(data = oz_states, colour = "black", fill = "NA") +
+  geom_point(
+    data = obs.data.ala,
+    mapping = aes(
+      x = decimalLongitude,
+      y = decimalLatitude,
+      color = species
+    )) +
+  labs(
+    x = "Longitude", 
+    y = "Latitude", 
+    colour = "Tick species",
+    title = "Ticks of Australia - Living Atlas Australia Records"
+  )
+
+p1 <- p + xlim (112,154) + ylim (-45,-8) + theme_classic() + scale_color_viridis(discrete=TRUE)
+
+ggplotly(p1)
+```
+
+```{r}
+p1.plotly <- plotly::ggplotly(p1)
+
+htmlwidgets::saveWidget(p1.plotly, "output/plots/map-all-ala.html")
+```
+
+
+```{r eval=FALSE, include=FALSE}
+#### Formatting for saving as pdf version
+
+# theme 1 with scale
+allmapala1 = p + coord_sf() + theme_bw() + theme(
+  legend.position = "none",
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank()
+) + ylim (-45, -8) + xlim (112, 154) + scale_color_viridis(discrete = TRUE)
+
+# theme 2 without scale
+allmapala2 = allmapala1 + coord_sf() + theme_void() + theme(legend.position = "none") + ylim (-45, -8) + xlim (112, 154) + scale_color_viridis(discrete =
+                                                                                                                                                 TRUE)
+
+# save
+ggsave(
+  "allmapala1.pdf",
+  plot = allmapala1,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+ggsave(
+  "allmapala2.pdf",
+  plot = allmapala2,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+
+#### just save legend
+library(grid)
+library(gridExtra) 
+
+# format map with legend
+
+
+maplegend = p + coord_sf() +
+  theme_bw() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  ylim (-45, -8) + xlim (112, 154) +
+  scale_color_viridis(discrete = TRUE) +
+  theme(legend.text = element_text(size = 7, face = "italic"))
+
+ggsave(
+  "maplegend-ala.pdf",
+  plot = maplegend,
+  path = "output/plots",
+  width = 30,
+  height = 15,
+  units = "cm"
+)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+library(rmarkdown)
+obs.data.ala.save <- obs.data.ala %>%
+  filter(decimalLatitude > -45) %>%
+  filter(decimalLatitude < -8) %>%
+  filter(decimalLongitude > 112) %>%
+  filter(decimalLongitude < 154)
+
+paged_table(obs.data.ala.save)
+```
+
+
