@@ -7,8 +7,19 @@ navbar:
     href: index.html
   - text: License
     href: license.html
-  - text: Maps
-    href: mapping.html
+  - text: "Tick Identification"
+    icon: fa-microscope
+    href: tickID.html
+  - text: Mapping
+    icon: fa-map-pin
+    menu:
+      - text: "Interactive maps"
+        href: mapsInteractive.html
+      - text: "Species maps"
+        href: mapsFigures.html
+  - text: Bioinformatics
+    icon: fa-laptop
+    href: Ixodida12SNGS.html
   right:
   - icon: fab fa-github
     text: Source code
